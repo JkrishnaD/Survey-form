@@ -40,8 +40,8 @@ const App = () => {
 
   useEffect(() => {
     if (!sessionId) {
-      const newSessionId = `session-${Date.now()}`;
-      setSessionId(newSessionId); // Create session ID
+      const newSessionId = `session-${new Date().getDate()}`;
+      setSessionId(newSessionId);
     }
   }, [sessionId]);
 
@@ -52,7 +52,7 @@ const App = () => {
     updatedAnswers[currentQuestionIndex] = {
       questionId,
       answer: answer || null,
-    }; // Save answer or null if skipped
+    };
     setAnswers(updatedAnswers);
   };
 
@@ -70,6 +70,10 @@ const App = () => {
     }
   };
 
+  const goToQuestion = (index) => {
+    setCurrentQuestionIndex(index);
+  };
+
   const handleSurveySubmit = () => {
     if (window.confirm("Are you sure you want to submit the survey?")) {
       localStorage.setItem(
@@ -77,6 +81,7 @@ const App = () => {
         JSON.stringify({ answers, status: "COMPLETED" })
       );
       setIsSubmitted(true);
+      localStorage.removeItem("inputValues");
       setTimeout(() => {
         setStarted(false);
         setCurrentQuestionIndex(0);
@@ -89,7 +94,7 @@ const App = () => {
   }
 
   if (isSubmitted) {
-    return <ThankyouPage message="Thank you for your time! Redirecting..." />;
+    return <ThankyouPage message="Thank you for your time! Bye👋" />;
   }
 
   return (
@@ -101,6 +106,8 @@ const App = () => {
         onAnswer={handleAnswer}
         onNext={handleNext}
         onPrev={handlePrev}
+        questions={questions}
+        goToQuestion={goToQuestion}
       />
     </>
   );

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Note } from "./components/note";
 
 export const Question = ({
   question,
@@ -8,17 +7,29 @@ export const Question = ({
   onPrev,
   currentQuestionIndex,
   totalQuestions,
+  questions,
+  goToQuestion,
 }) => {
+  useEffect(() => {
+    const savedAnswers = JSON.parse(localStorage.getItem("inputValues")) || {};
+
+    if (!savedAnswers[question.id]) {
+      setInputValue("");
+    }
+    setInputValue(savedAnswers[question.id])
+  }, [currentQuestionIndex]);
+
   const handleInput = (e) => {
     const value = e.target.value;
     setInputValue(value);
+
+    const savedAnswers = JSON.parse(localStorage.getItem("inputValues")) || {};
+    savedAnswers[question.id] = value;
+    localStorage.setItem("inputValues", JSON.stringify(savedAnswers));
     onAnswer(question.id, e.target.value);
   };
-  const [inputValue, setInputValue] = useState("");
 
-  useEffect(() => {
-    setInputValue("");
-  }, [currentQuestionIndex]);
+  const [inputValue, setInputValue] = useState("");
 
   return (
     <div className="relative bg-gradient-to-tr from-blue-400 to-sky-400 h-screen flex justify-center items-center flex-col">
@@ -29,10 +40,13 @@ export const Question = ({
             {currentQuestionIndex + 1}/{totalQuestions}
           </span>
         </h2>
-        <p className="font-medium">{question.text}</p>
+        <p className="font-medium">
+          <span className="px-2">{currentQuestionIndex + 1}.</span>
+          {question.text}
+        </p>
         {question.type === "rating" && (
           <input
-            className="border"
+            className="border-2"
             type="number"
             min={question.range[0]}
             max={question.range[1]}
@@ -47,24 +61,36 @@ export const Question = ({
             onChange={handleInput}
           />
         )}
+        <div className="space-x-4">
+          {questions.map((q, index) => (
+            <button
+              key={q.id}
+              onClick={() => goToQuestion(index)}
+              className={`rounded-full p-3 border ${
+                currentQuestionIndex === index
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
         <div className="flex flex-row justify-between items-center w-full ">
           <button
-            className="bg-black text-white p-2 rounded-md font-semibold"
+            className="bg-black text-white p-2 rounded-md font-semibold cursor-pointer disabled:cursor-not-allowed"
             onClick={onPrev}
             disabled={currentQuestionIndex === 0}
           >
             Previous
           </button>
           <button
-            className="bg-black text-white p-2 rounded-md font-semibold"
+            className="bg-black text-white p-2 rounded-md font-semibold cursor-pointer disabled:cursor-not-allowed"
             onClick={onNext}
           >
             Next
           </button>
         </div>
-      </div>
-      <div className="bottom-0 absolute">
-        <Note />
       </div>
     </div>
   );
